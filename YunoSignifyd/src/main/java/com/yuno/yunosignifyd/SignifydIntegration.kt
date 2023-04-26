@@ -4,7 +4,7 @@
  * Esta librería utiliza la librería ThreatMetrix para generar un perfil de dispositivo y enviarlo al servidor de Signifyd
  * para su análisis de fraude.
  */
-package com.example.yunosignifyd
+package com.yuno.yunosignifyd
 
 import android.app.Application
 import android.content.Context
