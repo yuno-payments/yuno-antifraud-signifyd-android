@@ -1,0 +1,64 @@
+apply plugin: 'maven-publish'
+
+def fraudLibraryRepositoryUrl
+def fraudLibraryRepositoryUsername
+def fraudLibraryRepositoryPassword
+def propertiesFile = project.rootProject.file('local.properties')
+if(propertiesFile.exists()){
+    Properties fraudLibraryRepositoryProperties = new Properties()
+    fraudLibraryRepositoryProperties.load(propertiesFile.newDataInputStream())
+    fraudLibraryRepositoryUrl = fraudLibraryRepositoryProperties.getProperty('library.repository.url').toString()
+    fraudLibraryRepositoryUsername = fraudLibraryRepositoryProperties.getProperty('library.repository.username').toString()
+    fraudLibraryRepositoryPassword = fraudLibraryRepositoryProperties.getProperty('library.repository.password').toString()
+} else {
+    fraudLibraryRepositoryUrl = System.getenv('library.repository.url')
+    fraudLibraryRepositoryUsername = System.getenv('library.repository.username')
+    fraudLibraryRepositoryPassword = System.getenv('library.repository.password')
+}
+
+
+publishing {
+    publications {
+        maven(MavenPublication) {
+            groupId fraudLibraryGroupId
+            artifactId fraudLibraryArtifactId
+            version fraudLibraryVersion
+            artifact("$buildDir/outputs/aar/YunoSignifyd-release.aar")
+            pom.withXml {
+                final dependenciesNode = asNode().appendNode('dependencies')
+
+                ext.addDependency = { Dependency dep, String scope ->
+                    if (dep.group == null || dep.version == null || dep.name == null || dep.name == "unspecified")
+                        return // invalid dependencies should be ignored
+
+                    final dependencyNode = dependenciesNode.appendNode('dependency')
+                    dependencyNode.appendNode('artifactId', dep.name)
+
+                    if (dep.version == 'unspecified') {
+                        dependencyNode.appendNode('groupId', project.ext.pomGroupID)
+                        dependencyNode.appendNode('version', project.ext.pomVersion)
+                        System.println("${project.ext.pomGroupID} ${dep.name} ${project.ext.pomVersion}")
+                    } else {
+                        dependencyNode.appendNode('groupId', dep.group)
+                        dependencyNode.appendNode('version', dep.version)
+                        System.println("${dep.group} ${dep.name} ${dep.version}")
+                    }
+                }
+                configurations.implementation.getDependencies().each { dep -> addDependency(dep, "runtime") }
+            }
+        }
+    }
+    repositories {
+        maven {
+            credentials {
+                url fraudLibraryRepositoryUrl
+                username fraudLibraryRepositoryUsername
+                password fraudLibraryRepositoryPassword
+            }
+        }
+    }
+}
+
+task publishSignifydLibrary(type: GradleBuild) {
+    tasks = ['clean', 'build', 'publish']
+}
