@@ -11,52 +11,55 @@ import android.content.Context
 import com.lexisnexisrisk.threatmetrix.TMXConfig
 import com.lexisnexisrisk.threatmetrix.TMXProfiling
 
-private var setOrgid = ""
-private var setFPServer = ""
+private var setOrgid = "w2txo5aa"
+private var setFPServer = "imgs.signifyd.com"
+private var setSessionId = ""
 private val config = TMXConfig()
 
 /**
- * Inicializa la librería YunoSignifyd. Debe llamarse antes de utilizar cualquier otra función de la librería.
+ * Inicializa la librería YunoSignifyd.
  *
- * @param orgId Identificador de organización proporcionado por Signifyd.
- * @param fpServer URL del servidor de detección de fraudes de Signifyd.
+ * @param context El contexto de la activity.
  */
-
 fun Application.initYunoSignifyd(
-    orgId: String,
-    fpServer: String
+    context: Context
 ) {
-    setOrgid = orgId
-    setFPServer = fpServer
+    getSessionId(context){ sessionId ->
+        setSessionId = sessionId
+    }
 }
 
 /**
- * Función para inicializar el perfil de dispositivo con ThreatMetrix.
+ * Obtiene el ID de sesión de YunoSignifyd de manera asíncrona.
  *
- * Debe llamarse en el método onCreate de la actividad principal.
- *
- * @param context Contexto de la aplicación.
+ * @param context El contexto de la aplicación.
+ * @param sessionId La función de devolución de llamada que se llamará con el ID de sesión obtenido.
  */
-fun Context.onCreateYunoSignifyd(context: Context) {
+
+private fun getSessionId(context: Context, sessionId: (sessionId: String) -> Unit) {
     config.setOrgId(setOrgid)
     config.setFPServer(setFPServer)
     config.setContext(context)
     TMXProfiling.getInstance().init(config)
-}
 
-/**
- * Genera y envía un perfil de dispositivo al servidor de detección de fraudes de Signifyd.
- *
- * Debe llamarse en el método onResume de la actividad principal.
- *
- * @param callback Función de retorno que recibe el ID de sesión generado por el servidor.
- */
-fun Context.onResumeYunoSignifyd(callback: (sessionId: String) -> Unit) {
     try {
-        TMXProfiling.getInstance().profile {
-            callback(it.sessionID)
+        TMXProfiling.getInstance().profile { sessionId ->
+            sessionId(sessionId.sessionID)
         }
     } catch (e: Exception) {
         e.printStackTrace()
     }
 }
+/**
+ * Obtiene el ID de sesión de YunoSignifyd.
+ *
+ * @return El ID de sesión o una cadena vacía si no se ha obtenido.
+ */
+fun Context.onCreateYunoSignifyd(): String {
+    return if (setSessionId.isEmpty()) {
+        ""
+    }else{
+        setSessionId
+    }
+}
+
