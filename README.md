@@ -27,21 +27,21 @@ Then, in your app module's `build.gradle` file, add the dependency:
 
 ```Gradle
 dependencies {
-    implementation 'com.yuno.fraud-signifyd:yunosignifyd:0.1.0'
+    implementation 'com.yuno.fraud-signifyd:yunosignifyd:0.1.6'
 }
 ```
 
 ##Step 2.
 
 Initialize the YunoSignifyd library in your application.
-Call the `initYunoSignifyd` function in the `onCreate` method of your Application class, passing the activity context as a parameter:
+Call the `initYunoSignifyd` function in the `onCreate` method of your Application class:
 
 ```kotlin
 class MyApp : Application() {
 
     override fun onCreate() {
         super.onCreate()
-        initYunoSignifyd(this)
+        initYunoSignifyd()
     }
 }
 ```

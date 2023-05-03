@@ -21,10 +21,8 @@ private val config = TMXConfig()
  *
  * @param context El contexto de la activity.
  */
-fun Application.initYunoSignifyd(
-    context: Context
-) {
-    getSessionId(context){ sessionId ->
+fun Application.initYunoSignifyd() {
+    getSessionId(this){ sessionId ->
         setSessionId = sessionId
     }
 }
